@@ -15,6 +15,7 @@
 #include "fmgr.h"
 #include "utils/pg_lsn.h"
 #include "varatt.h"
+#include "catalog/pg_control.h"
 
 #define WALDIFF_RM_ID       RM_EXPERIMENTAL_ID
 #define WALDIFF_RM_NAME     "wal_diff_rmgr"

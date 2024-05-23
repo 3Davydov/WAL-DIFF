@@ -1,0 +1,6 @@
+# wal_diff extension
+comment = 'creates wal_diff segment based on wal segment'
+default_version = '1.0'
+module_pathname = '$libdir/wal_diff'
+relocatable = true
+trusted = true

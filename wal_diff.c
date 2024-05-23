@@ -994,8 +994,8 @@ wal_diff_shutdown(ArchiveModuleState *state)
 {
 	ArchiveData *data = (ArchiveData *) state->private_data;
 
-	close(writer_state.src_fd);
-	close(writer_state.dest_fd);
+	CloseTransientFile(writer_state.src_fd);
+	CloseTransientFile(writer_state.dest_fd);
 
 	if (data == NULL)
 		return;

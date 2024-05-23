@@ -4,12 +4,16 @@ MODULE_big = wal_diff
 OBJS = \
 	wal_diff.o \
 	wal_diff_func.o \
-	wal_diff_rmgr.o
+	wal_diff_rmgr.o \
+	test_wal_diff_rmgr.o
 
 PGFILEDESC = "wal_diff - archive module with compressing"
 
 NO_INSTALLCHECK = 1
 TAP_TESTS = 1
+
+EXTENSION = wal_diff
+DATA = wal_diff--1.0.sql
 
 ifdef USE_PGXS
 PG_CONFIG = pg_config

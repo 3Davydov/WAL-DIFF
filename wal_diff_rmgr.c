@@ -315,5 +315,50 @@ waldiff_rmgr_desc(StringInfo buf, XLogReaderState *record)
 const char *
 waldiff_rmgr_identify(uint8 info)
 {
-	return NULL;
+	const char *id = NULL;
+  
+     switch (info & ~XLR_INFO_MASK)
+     {
+         case XLOG_CHECKPOINT_SHUTDOWN:
+             id = "CHECKPOINT_SHUTDOWN";
+             break;
+         case XLOG_CHECKPOINT_ONLINE:
+             id = "CHECKPOINT_ONLINE";
+             break;
+         case XLOG_NOOP:
+             id = "NOOP";
+             break;
+         case XLOG_NEXTOID:
+             id = "NEXTOID";
+             break;
+         case XLOG_SWITCH:
+             id = "SWITCH";
+             break;
+         case XLOG_BACKUP_END:
+             id = "BACKUP_END";
+             break;
+         case XLOG_PARAMETER_CHANGE:
+             id = "PARAMETER_CHANGE";
+             break;
+         case XLOG_RESTORE_POINT:
+             id = "RESTORE_POINT";
+             break;
+         case XLOG_FPW_CHANGE:
+             id = "FPW_CHANGE";
+             break;
+         case XLOG_END_OF_RECOVERY:
+             id = "END_OF_RECOVERY";
+             break;
+         case XLOG_OVERWRITE_CONTRECORD:
+             id = "OVERWRITE_CONTRECORD";
+             break;
+         case XLOG_FPI:
+             id = "FPI";
+             break;
+         case XLOG_FPI_FOR_HINT:
+             id = "FPI_FOR_HINT";
+             break;
+     }
+  
+     return id;
 }

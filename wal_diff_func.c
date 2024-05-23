@@ -84,8 +84,16 @@ read_one_xlog_rec(int src_fd, const char* src_file_name,
 				writer_state.sys_id 	  = long_hdr->xlp_sysid;
 				writer_state.page_addr = hdr->xlp_pageaddr;
 				writer_state.tli 	  = hdr->xlp_tli;
+
+				/*
+				 * If we are testing this function, writer_state
+				 * still does not contain wal_segment_size value
+				 */
+				if (writer_state.wal_segment_size == 0)
+					writer_state.wal_segment_size = long_hdr->xlp_seg_size;
 				
 				read_in_total += nbytes;
+				ereport(LOG, errmsg("READ LONG HDR. ADDR : %ld", long_hdr->std.xlp_pageaddr));
 			}
 
 			if (read_left == read_in_total)
@@ -199,6 +207,7 @@ write_one_xlog_rec(int dst_fd, const char* dst_file_name, char* xlog_rec_buffer)
 			if (writer_state.dest_curr_offset == 0)
 			{
 				XLogLongPageHeaderData long_hdr;
+				char				   tmp_buff[SizeOfXLogLongPHD];
 
 				long_hdr.xlp_sysid 		  = writer_state.sys_id;
 				long_hdr.xlp_seg_size	  = writer_state.wal_segment_size;
@@ -211,9 +220,11 @@ write_one_xlog_rec(int dst_fd, const char* dst_file_name, char* xlog_rec_buffer)
 				long_hdr.std.xlp_magic 	  = XLOG_PAGE_MAGIC;
 				long_hdr.std.xlp_pageaddr = writer_state.page_addr;
 
-				ereport(LOG, errmsg("LONG HDR. ADDR : %ld", long_hdr.std.xlp_pageaddr));
+				ereport(LOG, errmsg("WRITE LONG HDR. ADDR : %ld", long_hdr.std.xlp_pageaddr));
 
-				nbytes = write_buff2file(dst_fd, (char*) &long_hdr, SizeOfXLogLongPHD, 0);
+				memset(tmp_buff, 0, SizeOfXLogLongPHD);
+				memcpy(tmp_buff, (char*) &long_hdr, sizeof(XLogLongPageHeaderData));
+				nbytes = write_buff2file(dst_fd, tmp_buff, SizeOfXLogLongPHD, 0);
 				writer_state.dest_curr_offset += nbytes;
 			}
 			else
@@ -262,7 +273,15 @@ write_one_xlog_rec(int dst_fd, const char* dst_file_name, char* xlog_rec_buffer)
 		}
 
 		record = (XLogRecord*) xlog_rec_buffer;
-		record->xl_prev = writer_state.last_read_rec + writer_state.page_addr;
+
+		/*
+		 * First record in first segment has no previous records
+		 * TODO we must know if current segment is not first
+		 */
+		if (writer_state.dest_curr_offset == SizeOfXLogLongPHD && rem_data_len == 0)
+			record->xl_prev = 0;
+		else
+			record->xl_prev = writer_state.last_read_rec + writer_state.page_addr;
 		writer_state.last_read_rec = writer_state.dest_curr_offset;
 
 		INIT_CRC32C(crc);
