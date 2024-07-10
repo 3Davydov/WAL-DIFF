@@ -45,6 +45,13 @@ my $table_oid= $node->safe_psql('postgres', 'SELECT oid FROM pg_class WHERE reln
 diag("\ntable oid: $table_oid");
 
 # sleep(3600);
+# diag("sleeeeeeeeeeeeeeep");
+# sleep(3024032);
+
+# $node->safe_psql('postgres', 'CREATE EXTENSION pg_walinspect;');
+# diag("select");
+# my $resp = $node->safe_psql('postgres', 'SELECT * FROM pg_get_wal_record_info(\'0/117A110\');');
+# diag($resp);
 
 my ($walfile_name, $blocksize) = split '\|' => $node->safe_psql('postgres',
 	"SELECT pg_walfile_name(pg_switch_wal()), current_setting('block_size')");
@@ -75,6 +82,4 @@ diag("stdout: $stdout1");
 # Stop the server
 $node->stop('immediate');
 
-diag("sleeeeeeeeeeeeeeep");
-sleep(3024032);
 done_testing();
